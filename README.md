@@ -127,13 +127,13 @@ with salience $\sigma \in [0,1]$, days since last access $\Delta t$, access coun
 
 **Hybrid retrieval by Reciprocal Rank Fusion.** Dense (vector) and lexical (BM25) rankings are fused rank-wise, which is robust to the score-scale mismatch between the two retrievers:
 
-$$ \operatorname{RRF}(m) = \frac{1}{k + r_{\text{dense}}(m)} + \frac{1}{k + r_{\text{bm25}}(m)}, \qquad k = 60 $$
+$$ \mathrm{RRF}(m) = \frac{1}{k + r_{\text{dense}}(m)} + \frac{1}{k + r_{\text{bm25}}(m)}, \qquad k = 60 $$
 
 Cosine similarity drives the dense order. A candidate is considered for merging only when $\cos(\mathbf{e}_a, \mathbf{e}_b) \ge 0.78$ and an LLM judge confirms the two facts are the same; a dormant memory reactivates when a query cue clears $\cos \ge 0.45$.
 
 **Precedence as a lexicographic order.** Conflicting facts collapse to one winner by a deterministic key. With specificity $\rho(\text{org}) = 1 < \rho(\text{team}) = 2 < \rho(\text{user}) = 3$ and recency $t$:
 
-$$ \text{winner} = \begin{cases} \arg\min_{m}\ \bigl(\rho(m),\ -t_m\bigr) & \text{if any fact is locked} \\[4pt] \arg\max_{m}\ \bigl(\rho(m),\ t_m\bigr) & \text{otherwise} \end{cases} $$
+$$ \text{winner} = \begin{cases} \arg\min_{m}\ \bigl(\rho(m),\ -t_m\bigr) & \text{if any fact is locked} \\ \arg\max_{m}\ \bigl(\rho(m),\ t_m\bigr) & \text{otherwise} \end{cases} $$
 
 An authoritative lock wins, and among locks the most global one (org) outranks a team lock; without a lock, the most specific scope wins, with recency breaking ties. This is what makes the agent answer "20% (company policy, locked)" instead of guessing.
 
