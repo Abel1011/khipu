@@ -32,6 +32,16 @@ services:
       - qdrant
       - postgres
 
+  frontend:
+    build:
+      context: ../frontend
+      args:
+        VITE_API_URL: /api      # same-origin: nginx proxies /api -> backend:8000
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
 volumes:
   qdrant_data:
   pg_data:
