@@ -1,0 +1,12 @@
+2026-07-07 15:33:57 [warning  ] qdrant_unavailable_using_memory error='[WinError 10061] No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión'
+C:\Users\Abel Mendez\Documents\Abel\apps\qwen-hackaton\backend\.venv\Lib\site-packages\qdrant_client\qdrant_remote.py:290: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Set check_compatibility=False to skip version check.
+  show_warning(
+2026-07-07 15:34:04 [warning  ] postgres_unavailable_using_memory error="(psycopg.errors.ConnectionTimeout) connection timeout expired\nMultiple connection attempts failed. All failures were:\n- host: 'localhost', port: 5432, hostaddr: '::1': connection timeout expired\n- host: 'localhost', port: 5432, hostaddr: '127.0.0.1': connection timeout expired\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"
+CONTAINER repo=InMemoryMemoryRepo audit=InMemoryAuditRepo history=InMemoryHistoryRepo
+seeded 17 memories in 8s
+ANSWER: No. Company policy (locked): Maximum discount is 20% for new clients. You can’t offer a 30% discount to a new client.
+  CITE [Company policy] LOCK Maximum discount is 20% for new clients
+  CITE [Company policy] Client onboarding runs in 5 steps
+  CITE [Company policy] LOCK Do not share client data across teams
+  CITE [Team practice] Offer the annual plan first
+  CITE [Personal] Prefers 25-minute meetings

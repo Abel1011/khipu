@@ -1,0 +1,37 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: khipu
+      POSTGRES_PASSWORD: khipu
+      POSTGRES_DB: khipu
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  backend:
+    build: ../backend
+    volumes:
+      - ../backend/app:/app/app          # live code — `docker restart` applies changes, no rebuild
+    env_file:
+      - ../backend/.env
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      POSTGRES_URL: postgresql+psycopg://khipu:khipu@postgres:5432/khipu
+    ports:
+      - "8000:8000"
+    depends_on:
+      - qdrant
+      - postgres
+
+volumes:
+  qdrant_data:
+  pg_data:

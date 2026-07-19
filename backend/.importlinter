@@ -1,0 +1,13 @@
+[importlinter]
+root_package = app
+
+[importlinter:contract:ai-boundary]
+name = Domain, application and api must not touch HTTP/model SDKs directly
+type = forbidden
+source_modules =
+    app.domain
+    app.application
+    app.api
+forbidden_modules =
+    httpx
+    qdrant_client
