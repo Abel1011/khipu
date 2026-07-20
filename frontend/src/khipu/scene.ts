@@ -6,6 +6,7 @@ const ORG_COLOR = 0x4a4740;
 const GOLD = 0xc58a24;
 const DORMANT = 0x8f8474;
 const PRIV = 0x7a5c9e;
+const HIGHLIGHT = new THREE.Color(0xffffff);
 const COOLING = 0x4f7fa8;
 const BG = 0xffffff;
 const INTRO = 1.9;
@@ -436,18 +437,23 @@ export class KhipuScene {
       }
       if (el > INTRO + 0.4) {
         this.ready = true;
+        if (this.highlighted) this.highlightAt = performance.now();
         for (const c of this.cords) c.mesh.geometry.setDrawRange(0, Infinity);
       }
     } else {
       this.group.rotation.y += 0.0006;
       const now = performance.now();
-      if (this.highlighted && now - this.highlightAt > 6500) this.highlighted = null;
+      if (this.highlighted && now - this.highlightAt > 9000) this.highlighted = null;
+      const spotlight = this.highlighted ? 0.22 : 1;
       for (const k of this.knots) {
         const mat = k.mesh.material as THREE.MeshStandardMaterial;
-        mat.color.lerp(k.tColor, 0.12);
         const hi = this.highlighted === k;
-        mat.opacity += ((hi ? 1 : k.tOpacity) - mat.opacity) * 0.12;
-        const s = hi ? 1.6 + 0.12 * Math.sin(now * 0.011) : this.hover === k.mesh ? 1.28 : 1;
+        mat.color.lerp(hi ? HIGHLIGHT : k.tColor, hi ? 0.2 : 0.12);
+        mat.emissive.setHex(0xd0392b);
+        const glow = hi ? 0.55 + 0.25 * Math.sin(now * 0.009) : 0;
+        mat.emissiveIntensity += (glow - mat.emissiveIntensity) * 0.15;
+        mat.opacity += ((hi ? 1 : k.tOpacity * spotlight) - mat.opacity) * 0.12;
+        const s = hi ? 2.4 + 0.22 * Math.sin(now * 0.009) : this.hover === k.mesh ? 1.28 : 1;
         k.mesh.scale.x += (s - k.mesh.scale.x) * 0.18;
         k.mesh.scale.y = k.mesh.scale.z = k.mesh.scale.x;
       }
@@ -455,7 +461,7 @@ export class KhipuScene {
         const mat = c.mesh.material as THREE.MeshStandardMaterial;
         const dim = this.focusDim(c.level, c.team, c.person);
         const vis = this.cordVisible(c.level, c.team, c.person) ? (c.level === "user" ? 0.85 : 0.92) : 0.07;
-        mat.opacity += (vis * dim - mat.opacity) * 0.1;
+        mat.opacity += (vis * dim * spotlight - mat.opacity) * 0.1;
       }
     }
     this.renderer.render(this.scene, this.camera);
