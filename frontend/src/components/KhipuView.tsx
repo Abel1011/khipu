@@ -120,6 +120,12 @@ export function KhipuView({ org, memories }: { org?: OrgTree; memories?: MemoryV
             <span className="dot" style={{ background: "#fff", boxShadow: "0 0 0 2px #2a2a2a" }} />
             Locked policy
           </span>
+          {age > 0 && (
+            <span>
+              <span className="dot" style={{ background: "#4f7fa8" }} />
+              Changing tier
+            </span>
+          )}
         </div>
       </div>
 

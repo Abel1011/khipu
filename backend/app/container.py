@@ -26,7 +26,7 @@ class Container:
             self.memory_repo, self.audit_repo, self.org_repo, self.embedder,
             get_llm("extractor"), get_llm("judge"), get_llm("reasoner"), get_reranker(),
             top_k=s.retrieval_top_k, rerank_top_n=s.rerank_top_n,
-            dormant_cue=s.dormant_cue_threshold,
+            dormant_cue=s.dormant_cue_threshold, gate_llm=get_llm("extractor"),
         )
         self.governance = GovernanceService(
             self.memory_repo, self.audit_repo, self.org_repo, self.history_repo,

@@ -134,6 +134,7 @@ export function GovernanceScreen() {
   const [tierF, setTierF] = useState<(typeof TIERS)[number]>("all");
   const [preview, setPreview] = useState<string | null>(null);
   const [editing, setEditing] = useState<EditState | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -153,6 +154,8 @@ export function GovernanceScreen() {
   };
 
   const decide = async (id: string, approve: boolean) => {
+    if (busy) return;
+    setBusy(`decide:${id}:${approve}`);
     try {
       const r = await api.decidePromotion(id, profileId, approve);
       showToast(
@@ -168,10 +171,14 @@ export function GovernanceScreen() {
       refetchGov();
     } catch (e) {
       showToast(String((e as Error).message), true);
+    } finally {
+      setBusy(null);
     }
   };
 
   const chooseWinner = async (id: string) => {
+    if (busy) return;
+    setBusy(`winner:${id}`);
     try {
       const res = (await api.authoritative(id, profileId, true)) as { cascade?: { invalidated: number } };
       const n = res?.cascade?.invalidated ?? 0;
@@ -180,46 +187,64 @@ export function GovernanceScreen() {
       refetchGov();
     } catch (e) {
       showToast(String((e as Error).message), true);
+    } finally {
+      setBusy(null);
     }
   };
 
   const unlock = async (id: string) => {
+    if (busy) return;
+    setBusy(`unlock:${id}`);
     try {
       await api.authoritative(id, profileId, false);
       showToast("Lock removed - no longer authoritative");
       refetchGov();
     } catch (e) {
       showToast(String((e as Error).message), true);
+    } finally {
+      setBusy(null);
     }
   };
 
   const dismiss = async (id: string) => {
+    if (busy) return;
+    setBusy(`dismiss:${id}`);
     try {
       await api.dismissLock(id, profileId);
       showToast("Suggestion dismissed");
       refetchGov();
     } catch (e) {
       showToast(String((e as Error).message), true);
+    } finally {
+      setBusy(null);
     }
   };
 
   const forgetMem = async (id: string) => {
+    if (busy) return;
+    setBusy(`forget:${id}`);
     try {
       await api.forget(id, profileId);
       showToast("Version deleted");
       refetchGov();
     } catch (e) {
       showToast(String((e as Error).message), true);
+    } finally {
+      setBusy(null);
     }
   };
 
   const togglePin = async (m: MemoryView) => {
+    if (busy) return;
+    setBusy(`pin:${m.id}`);
     try {
       await api.pin(m.id, profileId, !m.pinned);
       showToast(m.pinned ? "Unpinned" : "Pinned - protected from decay");
       refetchGov();
     } catch (e) {
       showToast(String((e as Error).message), true);
+    } finally {
+      setBusy(null);
     }
   };
 
@@ -227,6 +252,8 @@ export function GovernanceScreen() {
     if (!editing) return;
     const text = editing.text.trim();
     if (!text) return;
+    if (busy) return;
+    setBusy(`edit:${m.id}`);
     try {
       if (editing.mode === "separate") {
         await api.edit(m.id, text, profileId, `${m.semantic_key}.${m.id.slice(0, 6)}`);
@@ -239,6 +266,8 @@ export function GovernanceScreen() {
       refetchGov();
     } catch (e) {
       showToast(String((e as Error).message), true);
+    } finally {
+      setBusy(null);
     }
   };
 
@@ -278,12 +307,23 @@ export function GovernanceScreen() {
         {gov && !isEditing && (
           <div className="cft-actions">
             {contender && !m.authoritative && (
-              <Button size="sm" onClick={() => chooseWinner(m.id)}>
+              <Button
+              size="sm"
+              loading={busy === `winner:${m.id}`}
+              disabled={!!busy}
+              onClick={() => chooseWinner(m.id)}
+            >
                 <ShieldCheck size={13} /> Make it the policy
               </Button>
             )}
             {m.authoritative && (
-              <Button size="sm" variant="ghost" onClick={() => unlock(m.id)}>
+              <Button
+              size="sm"
+              variant="ghost"
+              loading={busy === `unlock:${m.id}`}
+              disabled={!!busy}
+              onClick={() => unlock(m.id)}
+            >
                 <X size={12} /> Unlock
               </Button>
             )}
@@ -293,7 +333,7 @@ export function GovernanceScreen() {
             <button className="cft-tbtn" onClick={() => setEditing({ id: m.id, mode: "separate", text: m.content ?? "" })}>
               <Split size={12} /> Separate rule
             </button>
-            <button className="cft-tbtn danger" onClick={() => forgetMem(m.id)}>
+            <button className="cft-tbtn danger" disabled={!!busy} onClick={() => forgetMem(m.id)}>
               <Trash2 size={12} /> Delete
             </button>
             {contender && !m.authoritative && (
@@ -359,10 +399,21 @@ export function GovernanceScreen() {
                       </div>
                     </div>
                     <div className="qactions">
-                      <Button size="sm" onClick={() => decide(p.id, true)}>
+                      <Button
+                        size="sm"
+                        loading={busy === `decide:${p.id}:true`}
+                        disabled={!!busy}
+                        onClick={() => decide(p.id, true)}
+                      >
                         <Check size={13} /> Approve
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => decide(p.id, false)}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        loading={busy === `decide:${p.id}:false`}
+                        disabled={!!busy}
+                        onClick={() => decide(p.id, false)}
+                      >
                         <X size={13} /> Reject
                       </Button>
                     </div>
@@ -420,13 +471,18 @@ export function GovernanceScreen() {
                       </div>
                       {gov && !isEditing && (
                         <div className="cft-actions">
-                          <Button size="sm" onClick={() => chooseWinner(m.id)}>
+                          <Button
+              size="sm"
+              loading={busy === `winner:${m.id}`}
+              disabled={!!busy}
+              onClick={() => chooseWinner(m.id)}
+            >
                             <ShieldCheck size={13} /> Confirm lock
                           </Button>
                           <button className="cft-tbtn" onClick={() => setEditing({ id: m.id, mode: "edit", text: m.content ?? "" })}>
                             <Pencil size={12} /> Edit
                           </button>
-                          <button className="cft-tbtn danger" onClick={() => dismiss(m.id)}>
+                          <button className="cft-tbtn danger" disabled={!!busy} onClick={() => dismiss(m.id)}>
                             <X size={12} /> Dismiss
                           </button>
                         </div>

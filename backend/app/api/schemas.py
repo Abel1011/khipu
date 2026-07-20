@@ -45,6 +45,7 @@ class SaveRequest(BaseModel):
     content: str
     actor_id: str
     semantic_key: str | None = None
+    mtype: str | None = None
     propose_to: str | None = None  # "team" | "org": also file a promotion request
     team: str | None = None  # which team (an admin routing to a specific team)
 

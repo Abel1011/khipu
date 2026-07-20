@@ -19,6 +19,7 @@ from app.api.schemas import (
     view,
 )
 from app.application.governance_service import GovernanceError
+from app.application.memory_service import _as_type
 from app.application.redteam import run_redteam
 from app.container import get_container
 from app.domain.enums import ScopeLevel, SourceType, Visibility
@@ -85,6 +86,7 @@ def save_memory(req: SaveRequest):
 
     c = get_container()
     src = Source(type=SourceType.CHAT)
+    mtype = _as_type(req.mtype)
     propose = req.propose_to if req.propose_to in ("team", "org") else None
 
     # Governor sharing team/org: write straight to that scope (mirrors the Sources flow).
@@ -92,7 +94,8 @@ def save_memory(req: SaveRequest):
         target = _share_target(c, req.actor_id, propose, req.team)
         if target and c.org_repo.can_govern(req.actor_id, target):
             mem, superseded = c.memory.save_fact(
-                req.content, req.actor_id, target, semantic_key=req.semantic_key, source=src)
+                req.content, req.actor_id, target, semantic_key=req.semantic_key,
+                mtype=mtype, source=src)
             return {
                 "content": mem.content, "level": mem.scope.level.value,
                 "superseded": [s.content for s in superseded],
@@ -102,7 +105,8 @@ def save_memory(req: SaveRequest):
     # Otherwise it lands personal; team/org facts go up as a proposal for approval.
     scope = Scope(level=ScopeLevel.USER, id=f"{ORG_ID}.{req.actor_id}")
     mem, superseded = c.memory.save_fact(
-        req.content, req.actor_id, scope, semantic_key=req.semantic_key, source=src)
+        req.content, req.actor_id, scope, semantic_key=req.semantic_key,
+        mtype=mtype, source=src)
     proposed_to = None
     if propose:
         try:

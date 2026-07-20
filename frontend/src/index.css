@@ -284,6 +284,7 @@ aside { border-right: 1px solid var(--line); padding: 14px 12px; overflow-y: aut
 .mem-note.subtle svg { display: none; }
 
 .actgroup { margin-top: 15px; }
+.actgroup.busy { opacity: .5; pointer-events: none; }
 .actgroup .lbl { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--faint); margin-bottom: 7px; }
 .actgroup .row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
@@ -779,6 +780,11 @@ aside { border-right: 1px solid var(--line); padding: 14px 12px; overflow-y: aut
   cursor: pointer; transition: color 0.12s, border-color 0.12s; }
 .cft-tbtn:hover { color: var(--ink); border-color: var(--line2); }
 .cft-tbtn.danger:hover { color: var(--coch); border-color: #eabfba; }
+.cft-tbtn:disabled { opacity: .45; pointer-events: none; }
+.cc-go:disabled { opacity: .5; pointer-events: none; }
+.convlist .del:disabled { opacity: .45; pointer-events: none; }
+@keyframes hf-spin { to { transform: rotate(360deg); } }
+.spin { animation: hf-spin .9s linear infinite; }
 .cft-prev { display: inline-flex; align-items: center; gap: 5px; font-family: var(--ui); font-size: 12px;
   color: var(--muted); background: transparent; border: none; cursor: pointer; margin-left: auto; }
 .cft-prev:hover { color: var(--ink); }

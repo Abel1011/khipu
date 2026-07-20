@@ -1,4 +1,5 @@
-import { Plus, MessagesSquare, Trash2 } from "lucide-react";
+import { Loader2, MessagesSquare, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { useStore } from "../store";
 import { api } from "../lib/api";
 
@@ -8,15 +9,20 @@ export function ChatList({ onPick }: { onPick?: () => void }) {
   const showToast = useStore((s) => s.showToast);
   const { activeChatId, newChat, selectChat, deleteChat } = useStore();
   const conversations = all.filter((c) => c.owner === profileId);
+  const [removing, setRemoving] = useState<string | null>(null);
 
   // Delete server-side first, then locally - only if it actually succeeded.
   const remove = async (id: string) => {
+    if (removing) return;
+    setRemoving(id);
     try {
       const res = await api.deleteConversation(id, profileId);
       if (res.ok) deleteChat(id);
       else showToast("Couldn't delete - not your conversation", true);
     } catch {
       showToast("Couldn't delete the conversation", true);
+    } finally {
+      setRemoving(null);
     }
   };
 
@@ -55,12 +61,17 @@ export function ChatList({ onPick }: { onPick?: () => void }) {
               <button
                 className="del"
                 title="Delete chat"
+                disabled={!!removing}
                 onClick={(e) => {
                   e.stopPropagation();
                   remove(c.id);
                 }}
               >
-                <Trash2 size={13} />
+                {removing === c.id ? (
+                  <Loader2 size={13} className="spin" />
+                ) : (
+                  <Trash2 size={13} />
+                )}
               </button>
             </div>
           );

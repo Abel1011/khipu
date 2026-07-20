@@ -28,6 +28,7 @@ export function Inspector() {
   const { selected: m, profileId, showToast, select } = useStore();
   const qc = useQueryClient();
   const org = useQuery({ queryKey: ["org"], queryFn: api.orgTree });
+  const [busy, setBusy] = useState(false);
   const [history, setHistory] = useState<HistoryEntry[] | null>(null);
   const [draft, setDraft] = useState<string | null>(null); // non-null while editing
   useEffect(() => {
@@ -50,6 +51,8 @@ export function Inspector() {
   const sealed = m.state === "sealed";
   const accent = m.visibility === "private" ? "#7a5c9e" : LEVEL_COLOR[m.scope.level] ?? "#8f8474";
   const run = async (p: Promise<unknown>, msg: string) => {
+    if (busy) return;
+    setBusy(true);
     try {
       await p;
       showToast(msg);
@@ -58,6 +61,8 @@ export function Inspector() {
       select(null);
     } catch (e) {
       showToast(String((e as Error).message ?? e), true);
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -95,7 +100,7 @@ export function Inspector() {
             rows={3}
             autoFocus
           />
-          <div className="actgroup" style={{ marginTop: 8 }}>
+          <div className={"actgroup" + (busy ? " busy" : "")} style={{ marginTop: 8 }}>
             <div className="row">
               <button
                 className="mbtn primary"
@@ -167,7 +172,7 @@ export function Inspector() {
           {hasActions ? (
             <>
               {canKeep && (
-                <div className="actgroup">
+                <div className={"actgroup" + (busy ? " busy" : "")}>
                   <div className="lbl">Curate</div>
                   <div className="row">
                     {draft === null && (
@@ -192,7 +197,7 @@ export function Inspector() {
               )}
 
               {ownPersonal && (
-                <div className="actgroup">
+                <div className={"actgroup" + (busy ? " busy" : "")}>
                   <div className="lbl">Your sovereignty</div>
                   <div className="row">
                     {m.visibility === "private" ? (
@@ -227,7 +232,7 @@ export function Inspector() {
               )}
 
               {(canPromoteOrg || (canPromote && ownPersonal)) && (
-                <div className="actgroup">
+                <div className={"actgroup" + (busy ? " busy" : "")}>
                   <div className="lbl">Share - needs approval</div>
                   <div className="row">
                     {canPromote && ownPersonal && (

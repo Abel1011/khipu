@@ -40,7 +40,8 @@ export const api = {
       body: JSON.stringify({ text }),
     }).then((r) => r.candidates),
   saveMemory: (
-    content: string, actorId: string, semanticKey: string | null, proposeTo?: string, team?: string,
+    content: string, actorId: string, semanticKey: string | null, proposeTo?: string,
+    team?: string, mtype?: string,
   ) =>
     req<{ content: string; superseded: string[]; proposed_to: string | null; ingested_to: string | null }>(
       "/memory/save",
@@ -48,7 +49,7 @@ export const api = {
         method: "POST",
         body: JSON.stringify({
           content, actor_id: actorId, semantic_key: semanticKey,
-          propose_to: proposeTo ?? null, team: team ?? null,
+          propose_to: proposeTo ?? null, team: team ?? null, mtype: mtype ?? null,
         }),
       },
     ),

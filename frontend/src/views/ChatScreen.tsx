@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Lock, Send, Zap, Search, Sparkles, Network, Lightbulb, Check, Save, ChevronsUp, MessagesSquare,
-  ArrowRight, Users, Building2, User,
+  ArrowRight, Users, Building2, User, Loader2,
 } from "lucide-react";
 import type { Person } from "../lib/types";
 import ReactMarkdown from "react-markdown";
@@ -57,6 +57,7 @@ export function ChatScreen() {
 
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [saving, setSaving] = useState<string | null>(null);
   const [drawer, setDrawer] = useState(false); // conversation list as an overlay on tablet/mobile
   const [scopeOverride, setScopeOverride] = useState<Record<string, Aud>>({}); // per-candidate scope tweak
   const [teamOverride, setTeamOverride] = useState<Record<string, string>>({}); // per-candidate team (admin)
@@ -146,7 +147,9 @@ export function ChatScreen() {
           const routeTeam = aud === "team" && canTeam;
           const target = autoPropose && (aud === "org" || routeTeam) ? aud : undefined;
           try {
-            const r = await api.saveMemory(c.content, profileId, c.semantic_key, target);
+            const r = await api.saveMemory(
+              c.content, profileId, c.semantic_key, target, undefined, c.type,
+            );
             if (r.superseded.length) updated += 1;
             if (r.proposed_to) proposed += 1;
             if (r.ingested_to) ingested += 1;
@@ -173,9 +176,13 @@ export function ChatScreen() {
   };
 
   const saveCaptured = async (convId: string, idx: number, c: CaptureCandidate, aud: Aud, team?: string) => {
+    if (saving) return;
+    setSaving(`${convId}:${idx}`);
     try {
       const target = aud === "team" || aud === "org" ? aud : undefined;
-      const res = await api.saveMemory(c.content, profileId, c.semantic_key, target, team);
+      const res = await api.saveMemory(
+        c.content, profileId, c.semantic_key, target, team, c.type,
+      );
       const dest = aud === "team" ? teamName(team ?? "") : aud === "org" ? "company" : "your memory";
       showToast(
         res.ingested_to
@@ -398,12 +405,19 @@ export function ChatScreen() {
                               ) : (
                                 <button
                                   className={"cc-go" + (act === "propose" ? " propose" : act === "ingest" ? " ingest" : "")}
+                                  disabled={!!saving}
                                   onClick={() =>
                                     active && saveCaptured(active.id, k, c, aud, aud === "team" ? teamId : undefined)
                                   }
                                 >
                                   {actLabel}{" "}
-                                  {act === "propose" ? <ChevronsUp size={12} /> : <ArrowRight size={12} />}
+                                  {saving === `${active?.id}:${k}` ? (
+                                    <Loader2 size={12} className="spin" />
+                                  ) : act === "propose" ? (
+                                    <ChevronsUp size={12} />
+                                  ) : (
+                                    <ArrowRight size={12} />
+                                  )}
                                 </button>
                               )}
                             </div>

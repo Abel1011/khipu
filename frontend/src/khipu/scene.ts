@@ -6,6 +6,7 @@ const ORG_COLOR = 0x4a4740;
 const GOLD = 0xc58a24;
 const DORMANT = 0x8f8474;
 const PRIV = 0x7a5c9e;
+const COOLING = 0x4f7fa8;
 const BG = 0xffffff;
 const INTRO = 1.9;
 
@@ -304,6 +305,7 @@ export class KhipuScene {
     const m = k.memory;
     const tier = k.projTier ?? m.tier;
     if (m.state === "sealed" || m.visibility === "private") return new THREE.Color(PRIV);
+    if (k.projTier && k.projTier !== m.tier) return new THREE.Color(COOLING);
     if (tier === "consolidated") return new THREE.Color(GOLD);
     if (tier === "dormant") return new THREE.Color(DORMANT);
     if (m.authoritative) return new THREE.Color(k.teamColor);
@@ -314,6 +316,7 @@ export class KhipuScene {
 
   private knotOpacity(k: Knot): number {
     const m = k.memory;
+    if (k.projTier && k.projTier !== m.tier) return 1;
     const tier = k.projTier ?? m.tier;
     if (tier === "consolidated") return 1;
     if (tier === "dormant" || m.state === "sealed") return 0.75;

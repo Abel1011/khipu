@@ -49,7 +49,7 @@ class MemoryService:
         self, memory_repo, audit_repo, org_repo, embedder,
         extractor_llm, judge_llm, reasoner_llm, reranker,
         top_k: int = 50, rerank_top_n: int = 6, core_limit: int = 8,
-        dormant_cue: float = 0.45,
+        dormant_cue: float = 0.45, gate_llm=None,
     ):
         self.repo = memory_repo
         self.audit = audit_repo
@@ -57,6 +57,7 @@ class MemoryService:
         self.embedder = embedder
         self.extractor = extractor_llm
         self.judge = judge_llm
+        self.gate = gate_llm or judge_llm
         self.reasoner = reasoner_llm
         self.reranker = reranker
         self.top_k = top_k
@@ -157,7 +158,10 @@ class MemoryService:
         # prefilter; the conflict judge confirms before merging (never corrupt a distinct
         # memory). Scanning the top neighbours - not just the single closest - lets an
         # update land on the right fork instead of the wrong base (fork lineage).
-        for cand, score in self.repo.neighbors(vector, [scope.id], 5):
+        near_scopes = list(self.org.visible_scope_ids(actor_id)) if actor_id else []
+        if scope.id not in near_scopes:
+            near_scopes.append(scope.id)
+        for cand, score in self.repo.neighbors(vector, near_scopes, 5):
             if score < _DEDUP_THRESHOLD:
                 break
             if cand.semantic_key and (content == cand.content or self._conflict(content, cand.content) != "unrelated"):
@@ -189,7 +193,7 @@ class MemoryService:
         note = fact["content"]
         if fact.get("valid_until"):
             note += f"\n(Time-bound event, valid until {fact['valid_until']}.)"
-        data = self.judge.json([Message("system", JUDGE_SYSTEM), Message("user", note)])
+        data = self.gate.json([Message("system", JUDGE_SYSTEM), Message("user", note)])
         return bool(data.get("accepted"))
 
     def _conflict(self, new_content: str, existing_content: str) -> str:
