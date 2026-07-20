@@ -23,7 +23,7 @@ def _cfg() -> AIConfig:
 def get_llm(role: str = "reasoner") -> LLMProvider:
     cfg = _cfg()
     model = getattr(cfg, _ROLE_ATTR[role])
-    return RestLLMProvider(cfg.endpoint, model)
+    return RestLLMProvider(cfg.endpoint, model, enable_thinking=role in cfg.thinking_roles)
 
 
 @lru_cache

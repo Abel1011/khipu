@@ -12,10 +12,20 @@ _EMBED_BATCH = 10  # max input array size for DashScope embeddings
 class RestLLMProvider:
     """Generic REST chat provider for any compatible endpoint."""
 
-    def __init__(self, endpoint: Endpoint, model: str):
+    def __init__(self, endpoint: Endpoint, model: str, *, enable_thinking: bool = False):
         self._ep = endpoint
         self._model = model
+        self._thinking = enable_thinking
         self._client = httpx.Client(timeout=httpx.Timeout(60.0, connect=10.0))
+
+    def _body(self, messages: list[Message]) -> dict:
+        body: dict = {
+            "model": self._model,
+            "messages": [{"role": m.role, "content": m.content} for m in messages],
+        }
+        if not self._thinking:
+            body["enable_thinking"] = False
+        return body
 
     def _headers(self) -> dict[str, str]:
         if self._ep.auth_style == "api_key":
@@ -29,10 +39,7 @@ class RestLLMProvider:
     def chat(
         self, messages: list[Message], *, temperature: float | None = None, json_mode: bool = False
     ) -> str:
-        body: dict = {
-            "model": self._model,
-            "messages": [{"role": m.role, "content": m.content} for m in messages],
-        }
+        body = self._body(messages)
         # Some models only allow the default temperature; only send it when explicitly set.
         if temperature is not None:
             body["temperature"] = temperature
@@ -52,11 +59,8 @@ class RestLLMProvider:
 
     def stream(self, messages: list[Message], *, temperature: float | None = None):
         """Yield answer text chunks from a Server-Sent-Events completion stream."""
-        body: dict = {
-            "model": self._model,
-            "messages": [{"role": m.role, "content": m.content} for m in messages],
-            "stream": True,
-        }
+        body = self._body(messages)
+        body["stream"] = True
         if temperature is not None:
             body["temperature"] = temperature
         with self._client.stream(

@@ -22,6 +22,7 @@ class AIConfig:
     extractor: str
     judge: str
     reranker: str
+    thinking_roles: frozenset[str]
     embedder: str
     embed_dim: int
 
@@ -36,6 +37,9 @@ def load_ai_config() -> AIConfig:
         extractor=s.qwen_extractor,
         judge=s.qwen_judge,
         reranker=s.qwen_reranker,
+        thinking_roles=frozenset(
+            r.strip() for r in s.qwen_thinking_roles.split(",") if r.strip()
+        ),
         embedder=s.qwen_embedder,
         embed_dim=s.qwen_embed_dim,
     )
