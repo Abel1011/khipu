@@ -19,3 +19,6 @@ _reference/
 
 # Video production workspace (source assets and renders)
 video/
+
+# Local demo tooling
+scripts/
