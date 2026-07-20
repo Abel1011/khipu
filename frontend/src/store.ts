@@ -52,6 +52,11 @@ const mapChat = (
 const firstOf = (list: Conversation[], owner: string) =>
   list.find((c) => c.owner === owner)?.id ?? null;
 
+const newId = () =>
+  typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID()
+    : "c-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
 export const useStore = create<AppState>((set, get) => ({
@@ -120,7 +125,7 @@ export const useStore = create<AppState>((set, get) => ({
       };
     }),
   newChat: () => {
-    const id = crypto.randomUUID();
+    const id = newId();
     const owner = get().profileId;
     set((s) => ({
       conversations: [{ id, owner, title: "New chat", msgs: [] }, ...s.conversations],
