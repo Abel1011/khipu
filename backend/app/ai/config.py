@@ -21,6 +21,7 @@ class AIConfig:
     reasoner: str
     extractor: str
     judge: str
+    reranker: str
     embedder: str
     embed_dim: int
 
@@ -34,6 +35,7 @@ def load_ai_config() -> AIConfig:
         reasoner=s.qwen_reasoner,
         extractor=s.qwen_extractor,
         judge=s.qwen_judge,
+        reranker=s.qwen_reranker,
         embedder=s.qwen_embedder,
         embed_dim=s.qwen_embed_dim,
     )

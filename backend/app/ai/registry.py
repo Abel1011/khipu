@@ -10,6 +10,7 @@ _ROLE_ATTR = {
     "reasoner": "reasoner",
     "extractor": "extractor",
     "judge": "judge",
+    "reranker": "reranker",
 }
 
 
@@ -36,8 +37,8 @@ def get_reranker() -> RerankerProvider:
     s = get_settings()
     if s.use_local_reranker:  # heavy local cross-encoder (bge)
         return LocalReranker()
-    if s.use_llm_reranker:  # real neural rerank via the chat model (Qwen-native under qwen)
-        return LLMReranker(get_llm("reasoner"))
+    if s.use_llm_reranker:  # real neural rerank via the chat model
+        return LLMReranker(get_llm("reranker"))
     return RrfReranker()  # cheapest: trust the upstream hybrid/RRF order
 
 

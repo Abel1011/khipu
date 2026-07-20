@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     qwen_reasoner: str = "qwen3.7-plus"
     qwen_extractor: str = "qwen3.6-flash"
     qwen_judge: str = "qwen3.7-plus"
+    qwen_reranker: str = "qwen3.6-flash"
     qwen_embedder: str = "text-embedding-v3"  # DashScope embedding model, 1024-dim
     qwen_embed_dim: int = 1024
 
